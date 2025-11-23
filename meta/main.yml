@@ -1,0 +1,17 @@
+---
+galaxy_info:
+  author: Dan Davis
+  description: An Ansible Role that installs and configures a container registry on a RHEL8+ server. 
+  license: GPL-3.0
+  min_ansible_version: 2.1
+  platforms:
+  - name: EL
+    versions:
+    - 8
+    - 9
+    - 10
+
+  galaxy_tags:
+    - registry
+
+dependencies: []

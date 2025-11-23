@@ -1,0 +1,28 @@
+---
+- name: Stop and remove the registry container instance
+  become: True
+  containers.podman.podman_container:
+    name: myregistry
+    state: absent
+
+- name: Remove the /opt/registry directory 
+  become: True
+  ansible.builtin.file:
+    path: /opt/registry
+    state: absent
+
+- name: Remove packages required for registry
+  become: True
+  ansible.builtin.dnf:
+    name: 
+      - podman
+      - httpd-tools
+    state: absent
+
+- name: De-Configure firewall for registry
+  become: True
+  ansible.posix.firewalld:
+    port: 5000/tcp
+    permanent: true
+    immediate: true
+    state: disabled

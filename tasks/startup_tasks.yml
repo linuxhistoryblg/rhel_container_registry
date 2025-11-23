@@ -1,0 +1,76 @@
+---
+- name: Install packages required for registry
+  become: true
+  ansible.builtin.dnf:
+    name: 
+      - podman
+      - httpd-tools
+    state: latest
+
+- name: Create required directories
+  become: true
+  ansible.builtin.file:
+    state: directory
+    path: /opt/registry
+
+- name: Create required sub-directories
+  become: true
+  ansible.builtin.file:
+    state: directory
+    path: /opt/registry/{{ item }}
+  loop:
+    - auth
+    - certs
+    - data
+
+- name: Configure firewall
+  become: true
+  ansible.posix.firewalld:
+    port: 5000/tcp
+    permanent: true
+    immediate: true
+    state: enabled
+
+- name: Generate credentials for accessing the registry
+  become: true
+  register: credential_gen
+  ansible.builtin.command: htpasswd -bBc /opt/registry/auth/htpasswd {{ registryuser }} {{ registryuserpassword }}
+  changed_when: credential_gen['changed'] is true
+
+- name: Generate TLS key pair
+  become: true
+  register: keypair_gen
+  ansible.builtin.command: openssl req -newkey rsa:4096 -nodes -sha256 -keyout /opt/registry/certs/registry.key -x509 -days 365 -subj '/CN={{ ansible_facts['hostname'] }}' -addext 'subjectAltName = DNS:{{ ansible_facts['hostname'] }}' -out /opt/registry/certs/registry.crt
+
+- name: Start the registry container
+  become: true
+  containers.podman.podman_container:
+    name: myregistry
+    state: started
+    image: docker.io/library/registry:latest 
+    ports:
+      - "5000:5000"
+    volumes:
+      - "/opt/registry/data:/var/lib/registry:z" 
+      - "/opt/registry/auth:/auth:z"
+      - "/opt/registry/certs:/certs:z"
+    env:
+      REGISTRY_AUTH: htpasswd
+      REGISTRY_AUTH_HTPASSWD_REALM: Registry Realm
+      REGISTRY_AUTH_HTPASSWD_PATH: /auth/htpasswd
+      REGISTRY_HTTP_TLS_CERTIFICATE: /certs/registry.crt
+      REGISTRY_HTTP_TLS_KEY: /certs/registry.key
+      REGISTRY_COMPATIBILITY_SCHEMA1_ENABLED: true
+
+- name: Read the TLS certificate
+  register: tls_cert_content
+  ansible.builtin.slurp:
+    src: /opt/registry/certs/registry.crt
+  
+- name: HOW TO CONFIGURE TLS FOR YOUR HOST
+  ansible.builtin.debug:
+    msg: "Copy everything between the double quotes in the next message from -----BEGIN CERTIFICATE---- to -----END CERTIFICATE----- and paste into a file named /etc/pki/ca-trust/source/anchors/registry.crt on your host. Then run 'update-ca-trust'"
+
+- name: Display TLS certificate
+  ansible.builtin.debug:
+    msg: "{{ tls_cert_content['content'] | b64decode | replace('\n', '') }}"

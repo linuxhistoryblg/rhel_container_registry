@@ -1,0 +1,9 @@
+---
+# Name of your registry user
+registryuser: yourname
+
+# Password for your registry user
+registryuserpassword: Password123456
+
+# Role mode: startup or teardown
+mode: startup

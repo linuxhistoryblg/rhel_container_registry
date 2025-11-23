@@ -1,0 +1,8 @@
+---
+- name: Execute startup tasks when mode is startup
+  when: mode == 'startup'
+  ansible.builtin.import_tasks: startup_tasks.yml
+
+- name: Execute teardown tasks when mode is teardown
+  when: mode == 'teardown'
+  ansible.builtin.import_tasks: teardown_tasks.yml
