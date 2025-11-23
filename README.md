@@ -11,11 +11,11 @@ Requirements
 ------------
 
 Defined in collections/requirements.yml
-
+```
   collections:
     - name: ansible.posix
     - name: containers.podman
-
+```
 
 
 Role Variables
