@@ -63,4 +63,4 @@ GPL 3.0
 Author Information
 ------------------
 
-Dan Davis, [Linux History Blog](linuxhistory.com)
+Dan Davis, dan@linuxhistory.com
