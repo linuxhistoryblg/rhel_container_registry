@@ -1,4 +1,4 @@
-RHEL Container Registry
+RHEL Container Registry v1.0.0
 =========
 
 This role installs and configures a self-hosted stateless container registry to run on a RHEL8 or later server for use as a dev tool. This container registry should not be used for production purposes.
